@@ -15,7 +15,9 @@ import { cn } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import type { Session } from 'next-auth';
+import type { UserType } from '@/app/(auth)/auth';
+
+type Session = { user: { id: string; type: UserType } };
 
 export function ModelSelector({
   session,
