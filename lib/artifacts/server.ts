@@ -6,7 +6,9 @@ import { ArtifactKind } from '@/components/artifact';
 import { DataStreamWriter } from 'ai';
 import { Document } from '../db/schema';
 import { saveDocument } from '../db/queries';
-import { Session } from 'next-auth';
+import type { UserType } from '@/app/(auth)/auth';
+
+type Session = { user: { id: string; type: UserType } };
 
 export interface SaveDocumentProps {
   id: string;
