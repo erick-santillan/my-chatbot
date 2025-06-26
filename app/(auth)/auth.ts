@@ -1,92 +1,36 @@
-import { compare } from 'bcrypt-ts';
-import NextAuth, { type DefaultSession } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
-import { createGuestUser, getUser } from '@/lib/db/queries';
-import { authConfig } from './auth.config';
-import { DUMMY_PASSWORD } from '@/lib/constants';
-import type { DefaultJWT } from 'next-auth/jwt';
+import { headers } from 'next/headers';
 
-export type UserType = 'guest' | 'regular';
+export type UserType = 'regular';
 
-declare module 'next-auth' {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-      type: UserType;
-    } & DefaultSession['user'];
-  }
-
-  interface User {
-    id?: string;
-    email?: string | null;
-    type: UserType;
-  }
-}
-
-declare module 'next-auth/jwt' {
-  interface JWT extends DefaultJWT {
+export interface Session {
+  user: {
     id: string;
+    email: string;
     type: UserType;
-  }
+  };
 }
 
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
-  ...authConfig,
-  providers: [
-    Credentials({
-      credentials: {},
-      async authorize({ email, password }: any) {
-        const users = await getUser(email);
+export interface User {
+  id: string;
+  email: string;
+  type: UserType;
+}
 
-        if (users.length === 0) {
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
+export async function auth(): Promise<Session> {
+  const h = headers();
+  const email = h.get('X-Ms-Client-Principal-Name') ?? 'dev';
+  return { user: { id: email, email, type: 'regular' } };
+}
 
-        const [user] = users;
+export async function signIn() {
+  throw new Error('signIn is not implemented');
+}
 
-        if (!user.password) {
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
+export async function signOut() {
+  throw new Error('signOut is not implemented');
+}
 
-        const passwordsMatch = await compare(password, user.password);
-
-        if (!passwordsMatch) return null;
-
-        return { ...user, type: 'regular' };
-      },
-    }),
-    Credentials({
-      id: 'guest',
-      credentials: {},
-      async authorize() {
-        const [guestUser] = await createGuestUser();
-        return { ...guestUser, type: 'guest' };
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id as string;
-        token.type = user.type;
-      }
-
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.type = token.type;
-      }
-
-      return session;
-    },
-  },
-});
+export const handlers = {
+  GET: async () => new Response('Not Implemented', { status: 404 }),
+  POST: async () => new Response('Not Implemented', { status: 404 }),
+};

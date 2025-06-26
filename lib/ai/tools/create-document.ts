@@ -1,7 +1,7 @@
 import { generateUUID } from '@/lib/utils';
 import { DataStreamWriter, tool } from 'ai';
 import { z } from 'zod';
-import { Session } from 'next-auth';
+import { Session } from '@/app/(auth)/auth';
 import {
   artifactKinds,
   documentHandlersByArtifactKind,
