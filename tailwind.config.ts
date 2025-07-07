@@ -23,6 +23,7 @@ const config: Config = {
       },
       colors: {
         background: 'hsl(var(--background))',
+        'chat-background': 'hsl(var(--chat-background))',
         foreground: 'hsl(var(--foreground))',
         card: {
           DEFAULT: 'hsl(var(--card))',
