@@ -1,5 +1,5 @@
 import { DataStreamWriter, tool } from 'ai';
-import { Session } from 'next-auth';
+import { Session } from '@/app/(auth)/auth';
 import { z } from 'zod';
 import { getDocumentById, saveDocument } from '@/lib/db/queries';
 import { documentHandlersByArtifactKind } from '@/lib/artifacts/server';
