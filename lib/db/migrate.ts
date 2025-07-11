@@ -1,28 +1,25 @@
 import { config } from 'dotenv';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import postgres from 'postgres';
+import { MongoClient } from 'mongodb';
 
-config({
-  path: '.env.local',
-});
+config({ path: '.env.local' });
 
 const runMigrate = async () => {
-  if (!process.env.POSTGRES_URL) {
-    throw new Error('POSTGRES_URL is not defined');
+  if (!process.env.MONGODB_URI) {
+    throw new Error('MONGODB_URI is not defined');
   }
 
-  const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
-  const db = drizzle(connection);
+  const client = new MongoClient(process.env.MONGODB_URI);
+  await client.connect();
+  const db = client.db();
 
-  console.log('⏳ Running migrations...');
+  await Promise.all([
+    db.collection('users').createIndex({ email: 1 }, { unique: true }),
+    db.collection('chats').createIndex({ userId: 1 }),
+    db.collection('messages').createIndex({ chatId: 1 }),
+  ]);
 
-  const start = Date.now();
-  await migrate(db, { migrationsFolder: './lib/db/migrations' });
-  const end = Date.now();
-
-  console.log('✅ Migrations completed in', end - start, 'ms');
-  process.exit(0);
+  console.log('✅ MongoDB setup completed');
+  await client.close();
 };
 
 runMigrate().catch((err) => {
