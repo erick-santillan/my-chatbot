@@ -129,3 +129,19 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const systemPromptTable = pgTable(
+  'SystemPrompt',
+  {
+    id: uuid('id').defaultRandom().notNull(),
+    userId: uuid('userId')
+      .notNull()
+      .references(() => user.id),
+    prompt: text('prompt').notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.id] }),
+  }),
+);
+
+export type SystemPrompt = InferSelectModel<typeof systemPromptTable>;

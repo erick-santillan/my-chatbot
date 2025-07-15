@@ -26,6 +26,8 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  systemPromptTable,
+  type SystemPrompt,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -232,7 +234,6 @@ export async function getMessagesByChatId({ id }: { id: string }) {
     );
   }
 }
-
 
 export async function saveDocument({
   id,
@@ -484,6 +485,55 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get stream ids by chat id',
+    );
+  }
+}
+
+export async function getSystemPromptByUserId({ userId }: { userId: string }) {
+  try {
+    const [prompt] = await db
+      .select()
+      .from(systemPromptTable)
+      .where(eq(systemPromptTable.userId, userId));
+
+    return prompt as SystemPrompt | undefined;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get system prompt by user id',
+    );
+  }
+}
+
+export async function upsertSystemPrompt({
+  userId,
+  prompt,
+}: {
+  userId: string;
+  prompt: string;
+}) {
+  try {
+    const existing = await db
+      .select({ id: systemPromptTable.id })
+      .from(systemPromptTable)
+      .where(eq(systemPromptTable.userId, userId));
+
+    if (existing.length > 0) {
+      return await db
+        .update(systemPromptTable)
+        .set({ prompt })
+        .where(eq(systemPromptTable.userId, userId))
+        .returning();
+    }
+
+    return await db
+      .insert(systemPromptTable)
+      .values({ userId, prompt })
+      .returning();
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to upsert system prompt',
     );
   }
 }

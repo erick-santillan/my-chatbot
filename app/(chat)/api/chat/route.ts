@@ -16,6 +16,7 @@ import {
   getStreamIdsByChatId,
   saveChat,
   saveMessages,
+  getSystemPromptByUserId,
 } from '@/lib/db/queries';
 import { generateUUID, getTrailingMessageId } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
@@ -128,6 +129,11 @@ export async function POST(request: Request) {
       country,
     };
 
+    const userPromptRecord = await getSystemPromptByUserId({
+      userId: session.user.id,
+    });
+    const customSystemPrompt = userPromptRecord?.prompt;
+
     await saveMessages({
       messages: [
         {
@@ -148,7 +154,11 @@ export async function POST(request: Request) {
       execute: (dataStream) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: systemPrompt({
+            selectedChatModel,
+            requestHints,
+            customPrompt: customSystemPrompt,
+          }),
           messages,
           maxSteps: 5,
           experimental_activeTools:
