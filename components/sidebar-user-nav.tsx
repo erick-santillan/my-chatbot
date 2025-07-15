@@ -3,6 +3,7 @@
 import { ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import type { User } from '@/app/(auth)/auth';
+import { useState } from 'react';
 import { useTheme } from 'next-themes';
 
 import {
@@ -16,9 +17,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { SystemPromptDialog } from './system-prompt-dialog';
 
 export function SidebarUserNav({ user }: { user: User }) {
   const { setTheme, resolvedTheme } = useTheme();
+  const [showPromptDialog, setShowPromptDialog] = useState(false);
 
   return (
     <SidebarMenu>
@@ -50,13 +53,25 @@ export function SidebarUserNav({ user }: { user: User }) {
             <DropdownMenuItem
               data-testid="user-nav-item-theme"
               className="cursor-pointer"
-              onSelect={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              onSelect={() =>
+                setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+              }
             >
               {`Toggle ${resolvedTheme === 'light' ? 'dark' : 'light'} mode`}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onSelect={() => setShowPromptDialog(true)}
+            >
+              Custom system prompt
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+      <SystemPromptDialog
+        open={showPromptDialog}
+        onOpenChange={setShowPromptDialog}
+      />
     </SidebarMenu>
   );
 }
